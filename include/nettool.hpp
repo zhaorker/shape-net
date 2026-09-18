@@ -124,8 +124,9 @@ inline std::expected<bool,Socket_error> poll_chrono(int fd,short io/*直接传PO
         return false;
 
     pollfd input{.fd=fd,.events=io};
-    auto deadline=time_point_cast<milliseconds>
-        (steady_clock::now())+timeout;
+    auto deadline=steady_clock::now()+timeout;
+    //值得注意的是除非使用代表无穷超时的milliseconds::max(),deadline几乎没有上溢的可能性
+    //而timeout_ms被设为-1后，便不会再触碰deadline变量，因而真的触发的deadline上溢引发的严重后果，那大概是千年虫又来了
     int timeout_ms;
     if(timeout == std::numeric_limits<milliseconds>::max())
         timeout_ms=-1;
@@ -142,7 +143,7 @@ inline std::expected<bool,Socket_error> poll_chrono(int fd,short io/*直接传PO
             {
                 if(timeout_ms==-1)
                     continue;
-                timeout=deadline-time_point_cast<milliseconds>(steady_clock::now());
+                timeout=duration_cast<milliseconds>(deadline-steady_clock::now());
                 if(timeout < milliseconds::zero())
                     return false;
                 if(timeout <= milliseconds(std::numeric_limits<int>::max()))
@@ -160,7 +161,7 @@ inline std::expected<bool,Socket_error> poll_chrono(int fd,short io/*直接传PO
             if(timeout_ms < std::numeric_limits<int>::max())
                 return false;
 
-            timeout=deadline-time_point_cast<milliseconds>(steady_clock::now());
+            timeout=duration_cast<milliseconds>(deadline-steady_clock::now());
             if(timeout < milliseconds::zero())
                 return false;
             if(timeout <= milliseconds(std::numeric_limits<int>::max()))
