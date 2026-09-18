@@ -7,7 +7,7 @@
 这是一个针对linux平台的套接字API的薄封装，旨在简化使用socket时要手写的各种胶水
 
 ## 为什么用shape net
-- 如名字所言——这个库只包含RAII的套接字句柄与轮询器，而不提供任何调度模型，因而它有着很强的可塑性。如果你对并发模型和发送格式有强烈的定制需求，又不想仍受裸socket的复杂性，可以尝试shape net
+- 如名字所言——这个库只包含RAII的套接字句柄与轮询器，而不提供任何调度模型，因而它有着很强的可塑性。如果你对并发模型和发送格式有强烈的定制需求，又不想忍受裸socket的复杂性，可以尝试shape net
 - 库作者强烈建议将shape net与[Asynckernel](https://github.com/zhaorker/AsyncKernel)库一起使用。因为shape net设计的初衷就是为AsyncKernel提供一个同样自由的网络io库，让你可以完全掌控网络io和并发模型
 
 ## 功能简介
@@ -16,7 +16,7 @@
 - 易用的DNS解析工具——DNS_resolver。
 - 将sockaddr与`string ip,uint16_t port`互相转化的工具
 - RAII的tcp套接字`shape::tcp::Socket_handle`类，含有带超时和读写策略的io接口
-- 用于非阻塞connect的`start_connect`函数与`In_connecting`类，可以询问In_connecting类获得连接好的Socket_handle
+- 用于非阻塞connect的`shape::tcp::start_connect`函数与`shape::tcp::In_connecting`类，可以询问In_connecting类获得连接好的Socket_handle
 - RAII的tcp监听套接字`shape::tcp::Listener`类，由`shape::tcp::listen`函数创建
 
 - RAII的udp套接字`shape::udp::Socket_handle`，可选支持广播，它们都用Socket_handle表示，由内部数据策略驱动
