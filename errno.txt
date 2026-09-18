@@ -1,0 +1,20 @@
+getaddrinfo
+EAI_ADDRFAMILY	节点名的地址族不支持//INVALID_PARAM
+EAI_AGAIN	名称解析暂时失败，可重试//DNS_RESOLVE_AGAIN
+EAI_BADFLAGS	ai_flags 值无效//可杜绝
+EAI_FAIL	名称解析永久性失败//DNS_RESOLVE_FAIL
+EAI_FAMILY	ai_family 不支持//可杜绝
+EAI_MEMORY	内存分配失败//ALLOC_FAIL
+EAI_NODATA	节点名无关联地址//DNS_NOT_FOUND
+EAI_NONAME	主机名或服务名未提供，或未知//DNS_NOT_FOUND
+EAI_SERVICE	服务名不支持该套接字类型//INVALID_PARAM
+EAI_SOCKTYPE	ai_socktype 不支持//INVALID_PARAM
+EAI_SYSTEM	系统错误（检查 errno）
+
+
+uring返回的“无效请求”
+EBADR	无效请求描述符
+EBADRQC	无效请求码
+EBADSLT	无效槽位
+
+ECANCELED	操作被取消，用于uring,aio,线程等api

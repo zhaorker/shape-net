@@ -1,0 +1,47 @@
+//EACCES 我姑且不认为我的库需要任何高权限的操作
+//EPERM 有权限也不允许的操作，权限在socket里存在感还蛮低的，除非RAW
+//EADDRINUSE 用reuseaddr和reuseport,基本不会有这个了
+EADDRNOTAVAIL bind指定的地址系统无法提供（与本机ip不服，connect分配ip失败），以及多播组不允许之类情况，可以考虑单开ADDRESS_INVALID枚举
+//EAFNOSUPPORT family不支持，在库的封装体系内也应当隐藏
+//EAGAIN/EWOULDBLOCK 无需多言//我都是poll完再io的，顶多重试几遍，另外，“有没有数据”对用户而言最直观的的表达是 返回读了多少字节/没有数据就TIME_OUT。返回WOULD_BLOCK这个名字是十分有误导性的
+//EALREADY 已经发起异步connect,再次调用connect且连接尚未完成，我的库目前而言——只要是交出去的tcp_socket一定connect完了
+EBADF -1或未连接的套接字 //INVALID_SOCKET,即空、默认构造的socket_handle,反正一般在调用系统函数前就自检-1了
+EBAGMSG 要是真触发了这种错误那还能说啥，听天由命呗//SYS_ERROR
+//EBUSY 极少遇到的设备在忙，在socket里也很难“就业”了
+//ECONNABORTED 连接终止，accept调用里，三路握手每完成对面就终止了，我的listener实现好像没处理这个，但这个错误不应当泄漏到用户代码,我要在accept内部加重试逻辑
+//ECONNREFUSED 非阻塞connect，getsockopt返回连接失败//好像在connect场合下还可能ETIMEDOUT，既然如此connect对于此错误码返回PEER_RESET
+//EINPROGRESS 非阻塞首次调用connect,表示握手已在进行//没连接完的socket_handle不会返回到用户
+//EISCONN 非阻塞套接字connect,但已经完成握手//库接口层面不会允许重复connect
+ECONNRESET 套接字对端发RST,多在io函数中返回，通常要直接调用close//PEER_RESET
+EDESTADDRREQ UDP等未连接的套接字没有指定地址//INVALID_PARAM
+EFAULT 传入了无效的指针//INVALID_PARAM
+EHOSTDOWN 主机存在，但不响应，connect和io函数都可能返回该错误
+EHOSTUNREACH 路由里找不到该主机
+ENETDOWN 本机网卡无法发出，作为一种硬错误
+ENETUNREACH 本机的路由等出问题，配置错误也是程序代码无能为力的//全部UNREACHABLE,具体怎么个“到不了法”不重要，反正直接结束连接就好了
+EINTR//库内部消化
+EINVAL 任意层面，宽泛的无效参数//INVALID_PARAM
+EIO 物理层面的读写错误，范围很广，难以排查//SYS_ERROR
+EMSGSIZE 消息本身太大，典型场景超过了UDP的MTU，或者开启了不允许分片不允许//udp的send_package返回MESSAGE_TOOBIG
+EMFILE 进程打开太多描述符Too many open files//RESOURCE_EXHAUSTED
+ENFILE 系统打开太多文件描述符//RESOURCE_EXHAUSTED
+ENETRESET 网络被重置，类似于重新连了个wifi这种场景//NEED_RECONNECT
+ENOMEM 通用系统内存耗尽//ALLOC_FAIL
+ENOBUFS 特殊内存耗尽->内核缓冲区没内存了(网卡缓冲区满了或者整个系统内存不够了，还有socket创建失败等)。可以全部归类到ALLOC_FAIL
+因为我的库所有接口都是noexcept的，所以如果string内存分配失败也返回ALLOC_FAIL,反正库级错误和内核错误对用户而言都是internal error
+//ENOPROTOOPT 不存在或不可用的协议选项，本质上可归为INVALID_PARAM，但应当在库层杜绝
+EPROTO 网络层（OSI模型）发生了错误，通常难以排查//SYS_ERROR
+//EPROTONOSUPPORT 存在的协议，但主机不支持，作为面向现代C++和新linux的编程基本忽略该选项
+//EPROTOTYPE 就是从来没有人思考过的“type与procotol参数不匹配的后果是什么”的答案,库层面封装杜绝这种错误
+//ESOCKTNOSUPPORT,也应该在库封装层杜绝
+//ENOSR是stream,但资源不够
+//ENOSTR 不是stream。stream在基础socket里还是不太常见
+//ENOSYS 内核太老导致的调用缺失，不管
+//ENOTCONN 对于需要连接的操作，使用了一个尚未连接的socket,如不连接的tcp。另外，非阻塞connect没完成就read/write也会引发//依旧——没连接完的tcp_socket不返回到用户
+//ENOTSOCK 是描述符，不是套接字，send/recv会返回该错误，但在库的封装体系下不会发生这种问题
+//ENOTSUP/linux下值一致 == EOPNOTSUPP 操作存在，但不支持的用法，udp的listen，getsockopt不符合套接字类型的选项，库接口层面杜绝
+EPIPE 对端关闭了写管道后write会触发，值得注意的是这里的“关闭写管道”往往是正常的close或shut而不是RST//PEER_CLOSE
+ESHUTDOWN 本地shut,而继续尝试写，虽然读是可以,但不能写，特殊性还蛮大的，可以考虑单开SEND_AFTER_SHUT
+//ETIME 计时器，跟网络关系还是没那么大
+ETIMEDOUT 各种场景的超时，非阻塞connect有可能返回，而很多io函数也都会阻塞后返回，但那是“完完全全的无响应”，但凡发个ICMP或者分解都会是其他errno。就connect场景来说，返回PEER_RESET可以意味着对端拒绝连接，就io场景来说，PEER_RESET可以代表对端静默崩溃，所以ETIMEDOUT对应PEER_RESET
+//ETOOMANYREFS 目前也很难想象在socket里触发“太多引用”有多困难，我是多线程又不是多进程
