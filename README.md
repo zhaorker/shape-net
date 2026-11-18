@@ -31,11 +31,9 @@
 - **C++23 兼容编译器**：
   - GCC 11+（推荐 13+）
   - Clang 14+（推荐 17+）
-  - MSVC 2022 17.5+
-- **CMake 3.20+**（推荐 3.25+）
 
 ## 许可证
-本项目采用 GNU General Public License v3.0 授权。详见 LICENSE 文件。
+本项目采用 GNU General Public License v3.0 授权。详见[LICENSE](LICENSE) 文件。
 
 ## 将来计划
 1. 目前tcp的接口里还存在std::chrono::time_point上溢的逻辑漏洞，虽然比较难触发，但迟早要修
